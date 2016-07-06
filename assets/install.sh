@@ -68,6 +68,20 @@ if [[ -n "$(find /etc/postfix/certs -iname *.crt)" && -n "$(find /etc/postfix/ce
   postconf -P "submission/inet/smtpd_recipient_restrictions=permit_sasl_authenticated,reject_unauth_destination"
 fi
 
+
+##############
+# Enable relay
+##############
+if [[ -n "{$relay_domain}" && -n "{$relay_user}" && -n "{$relay_password}"]]; then
+  postconf -e relayhosts=[$relay_domain]:587
+  postconf -e smtp_sasl_auth_enable=yes
+  postconf -e smtp_sasl_security_options=noanonymous
+  postconf -e smtp_use_tls=yes
+
+  echo "[$relay_domain]:587 $relay_user:$relay_password" >> /etc/postfix/sasl_passwd
+  postmap /etc/postfix/sasl_passwd
+fi
+
 #############
 #  opendkim
 #############
