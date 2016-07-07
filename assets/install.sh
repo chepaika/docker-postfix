@@ -84,6 +84,35 @@ if [[ -n "${relay_domain}" && -n "${relay_user}" && -n "${relay_password}" ]]; t
 fi
 
 #############
+# Enable gpg
+#############
+if [[ -n "${gpg}" ]]; then
+  if [ ! -e /etc/zeyple/zeyple.conf ]; then
+    wget --quiet --output-document=/etc/zeyple.conf https://raw.github.com/infertux/zeyple/master/zeyple/zeyple.conf.example;
+  fi
+
+  chmod 700 /var/lib/zeyple/keys && chown -R zeyple: /var/lib/zeyple/keys
+
+if ! grep --quiet "^zeyple" /etc/postfix/master.cf; then
+cat >> /etc/postfix/master.cf <<END
+zeyple    unix  -       n       n       -       -       pipe
+  user=zeyple argv=/usr/local/bin/zeyple.py \${recipient}
+localhost:10026 inet  n       -       n       -       10      smtpd
+  -o content_filter=
+  -o receive_override_options=no_unknown_recipient_checks,no_header_body_checks,no_milters
+  -o smtpd_helo_restrictions=
+  -o smtpd_client_restrictions=
+  -o smtpd_sender_restrictions=
+  -o smtpd_recipient_restrictions=permit_mynetworks,reject
+  -o mynetworks=127.0.0.0/8,[::1]/128
+  -o smtpd_authorized_xforward_hosts=127.0.0.0/8,[::1]/128
+END
+fi
+
+  postconf -e content_filter=zeyple
+fi
+
+#############
 #  opendkim
 #############
 
