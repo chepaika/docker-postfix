@@ -72,7 +72,7 @@ fi
 ##############
 # Enable relay
 ##############
-if [[ -n "{$relay_domain}" && -n "{$relay_user}" && -n "{$relay_password}"]]; then
+if [[ -n "${relay_domain}" && -n "${relay_user}" && -n "${relay_password}" ]]; then
   postconf -e relayhosts=[$relay_domain]:587
   postconf -e smtp_sasl_auth_enable=yes
   postconf -e smtp_sasl_security_options=noanonymous
